@@ -44,6 +44,7 @@ namespace InputTextX
         private Color inputFontColor;
         private float inputFontSize;
         private HorizontalAlignment textAlign;
+        private RightToLeft _rightToLeft;
         private bool isPassword;
         private FontStyle textFontStyle;
         private bool multiline;
@@ -101,7 +102,7 @@ namespace InputTextX
             int unFocusDismiss,
             int inputWidth, int inputHeight,
             Color inputFontColor, float inputFontSize,
-            HorizontalAlignment textAlign, bool isPassword, FontStyle textFontStyle, bool multiline,
+            HorizontalAlignment textAlign, RightToLeft rightToLeft, bool isPassword, FontStyle textFontStyle, bool multiline,
             int allowScroll, InputTypeOption inputType, string allowedChars,
             string onDismissAction, string onEnterAction, string onESCAction, string onInvalidAction,
             int inputLimit, string defaultValue, string fontFace,
@@ -121,6 +122,7 @@ namespace InputTextX
             this.inputFontColor = inputFontColor;
             this.inputFontSize = inputFontSize;
             this.textAlign = textAlign;
+            this._rightToLeft = rightToLeft;
             this.isPassword = isPassword;
             this.textFontStyle = textFontStyle;
             this.multiline = multiline;
@@ -191,6 +193,7 @@ namespace InputTextX
                     Dock = DockStyle.Fill,
                     ForeColor = inputFontColor,
                     TextAlign = textAlign,
+                    RightToLeft = _rightToLeft,
                     BackColor = solidColor,
                     UseSystemPasswordChar = isPassword,
                     Multiline = multiline,
@@ -211,6 +214,7 @@ namespace InputTextX
                     BorderStyle = BorderStyle.None,
                     ForeColor = inputFontColor,
                     TextAlign = textAlign,
+                    RightToLeft = _rightToLeft,
                     BackColor = solidColor,
                     UseSystemPasswordChar = isPassword,
                     Multiline = multiline,

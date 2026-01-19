@@ -37,6 +37,7 @@ namespace InputTextX
         private Color fontColor = Color.Black;
         private float fontSize = 12f;
         private HorizontalAlignment textAlign = HorizontalAlignment.Center;
+        private RightToLeft rightToLeft = RightToLeft.No;
         private bool isPassword = false;
         private FontStyle fontStyleParam = FontStyle.Regular;
         private string fontFace = "Segoe UI";
@@ -104,6 +105,20 @@ namespace InputTextX
                     break;
                 default:
                     textAlign = HorizontalAlignment.Center;
+                    break;
+            }
+
+            string rightToLeftStr = api.ReadString("RightToLeft", "No");
+            switch (rightToLeftStr.ToLower())
+            {
+                case "yes":
+                    rightToLeft = RightToLeft.Yes;
+                    break;
+                case "inherit":
+                    rightToLeft = RightToLeft.Inherit;
+                    break;
+                default:
+                    rightToLeft = RightToLeft.No;
                     break;
             }
 
@@ -210,7 +225,7 @@ namespace InputTextX
                                 unFocusDismiss,
                                 inputWidth, inputHeight,
                                 fontColor, fontSize,
-                                textAlign, isPassword, fontStyleParam, multiline,
+                                textAlign, rightToLeft, isPassword, fontStyleParam, multiline,
                                 allowScroll, inputType, allowedChars,
                                 onDismissAction, onEnterAction, onESCAction, onInvalidAction,
                                 inputLimit, defaultValue, fontFace,
