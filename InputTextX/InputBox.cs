@@ -26,11 +26,21 @@ namespace InputTextX
             public static extern bool SetWindowPos(
                 IntPtr hWnd, IntPtr hWndInsertAfter,
                 int X, int Y, int cx, int cy, uint uFlags);
+
+            [DllImport("user32.dll")]
+            public static extern bool ShowScrollBar(IntPtr hWnd, int wBar, bool bShow);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto)]
+            public static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
         }
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOACTIVATE = 0x0010;
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const int SB_VERT = 1;
+        private const uint WM_VSCROLL = 0x0115;
+        private const int SB_LINEUP = 0;
+        private const int SB_LINEDOWN = 1;
 
         public event EventHandler<string> TextSubmitted;
         private TextBox textBox;
@@ -57,6 +67,8 @@ namespace InputTextX
         private string _onEnterAction;
         private string _onESCAction;
         private string _onInvalidAction;
+        private string _onScrollAction;
+        private string _onTextChangeAction;
 
         // Text parameters.
         private int _inputLimit;
@@ -104,7 +116,7 @@ namespace InputTextX
             Color inputFontColor, float inputFontSize,
             HorizontalAlignment textAlign, RightToLeft rightToLeft, bool isPassword, FontStyle textFontStyle, bool multiline,
             int allowScroll, InputTypeOption inputType, string allowedChars,
-            string onDismissAction, string onEnterAction, string onESCAction, string onInvalidAction,
+            string onDismissAction, string onEnterAction, string onESCAction, string onInvalidAction, string onScrollAction, string onTextChangeAction,
             int inputLimit, string defaultValue, string fontFace,
             int posX, int posY,
             int allowBorder,
@@ -134,6 +146,8 @@ namespace InputTextX
             _onEnterAction = onEnterAction;
             _onESCAction = onESCAction;
             _onInvalidAction = onInvalidAction;
+            _onScrollAction = onScrollAction;
+            _onTextChangeAction = onTextChangeAction;
 
             _inputLimit = inputLimit;
             _defaultValue = defaultValue;
@@ -198,9 +212,9 @@ namespace InputTextX
                     UseSystemPasswordChar = isPassword,
                     Multiline = multiline,
                     AutoSize = false,
-                    ScrollBars = (multiline && allowScroll == 1) ? ScrollBars.Vertical : ScrollBars.None
+                    ScrollBars = ScrollBars.None
                 };
-                if (_inputLimit > 0)
+
                     textBox.MaxLength = _inputLimit;
                 if (!string.IsNullOrEmpty(_defaultValue))
                     textBox.Text = _defaultValue;
@@ -219,7 +233,7 @@ namespace InputTextX
                     UseSystemPasswordChar = isPassword,
                     Multiline = multiline,
                     AutoSize = false,
-                    ScrollBars = (multiline && allowScroll == 1) ? ScrollBars.Vertical : ScrollBars.None
+                    ScrollBars = ScrollBars.None
                 };
                 textBox.SetBounds(0, 0, inputWidth, inputHeight);
                 if (_inputLimit > 0)
@@ -255,7 +269,21 @@ namespace InputTextX
             textBox.TextChanged += (sender, e) =>
             {
                 TextSubmitted?.Invoke(this, textBox.Text);
+                string changeCommand = ReplacePlaceholder(_onTextChangeAction, EscapeCommandArgument(textBox.Text));
+                if (!string.IsNullOrWhiteSpace(changeCommand))
+                {
+                    if (logging == 1)
+                        _api.Log(API.LogType.Notice, "Text change command: " + changeCommand);
+                    try { _api.Execute(changeCommand); }
+                    catch (Exception ex)
+                    {
+                        if (logging == 1)
+                            _api.Log(API.LogType.Error, "Error executing TextChange command: " + ex.Message);
+                    }
+                }
             };
+            if (multiline)
+                textBox.MouseWheel += TextBox_MouseWheel;
 
             this.ResumeLayout(false);
         }
@@ -274,6 +302,14 @@ namespace InputTextX
             if (string.IsNullOrEmpty(command))
                 return command;
             return Regex.Replace(command, Regex.Escape("$UserInput$"), replacement, RegexOptions.IgnoreCase);
+        }
+
+        // New helper: case-insensitive replacement for "$ScrollDelta$"
+        private string ReplaceScrollPlaceholder(string command, string replacement)
+        {
+            if (string.IsNullOrEmpty(command))
+                return command;
+            return Regex.Replace(command, Regex.Escape("$ScrollDelta$"), replacement, RegexOptions.IgnoreCase);
         }
 
         private bool ValidateChar(char ch)
@@ -466,6 +502,31 @@ namespace InputTextX
         {
             base.OnShown(e);
             this.Opacity = 1; 
+        }
+
+        private void TextBox_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (allowScroll == 1)
+            {
+                int lines = Math.Abs(e.Delta) / 120;
+                int direction = e.Delta > 0 ? SB_LINEUP : SB_LINEDOWN;
+                for (int i = 0; i < lines; i++)
+                {
+                    NativeMethods.SendMessage(textBox.Handle, WM_VSCROLL, (IntPtr)direction, IntPtr.Zero);
+                }
+            }
+            string command = ReplaceScrollPlaceholder(_onScrollAction, e.Delta.ToString());
+            if (!string.IsNullOrWhiteSpace(command))
+            {
+                if (logging == 1)
+                    _api.Log(API.LogType.Notice, "Final Scroll command: " + command);
+                try { _api.Execute(command); }
+                catch (Exception ex)
+                {
+                    if (logging == 1)
+                        _api.Log(API.LogType.Error, "Error executing Scroll command: " + ex.Message);
+                }
+            }
         }
     }
 }

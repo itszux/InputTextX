@@ -57,6 +57,8 @@ namespace InputTextX
         private string onEnterAction = "";
         private string onESCAction = "";
         private string onInvalidAction = "";
+        private string onScrollAction = "";
+        private string onTextChangeAction = "";
 
         // Offset parameters.
         private int offsetX = 20;
@@ -157,6 +159,8 @@ namespace InputTextX
             onEnterAction = api.ReadString("OnEnterAction", "");
             onESCAction = api.ReadString("OnESCAction", "");
             onInvalidAction = api.ReadString("InValidAction", "");
+            onScrollAction = api.ReadString("OnScrollAction", "");
+            onTextChangeAction = api.ReadString("OnTextChangeAction", "");
 
             offsetX = api.ReadInt("X", 20);
             offsetY = api.ReadInt("Y", 20);
@@ -227,7 +231,7 @@ namespace InputTextX
                                 fontColor, fontSize,
                                 textAlign, rightToLeft, isPassword, fontStyleParam, multiline,
                                 allowScroll, inputType, allowedChars,
-                                onDismissAction, onEnterAction, onESCAction, onInvalidAction,
+                                onDismissAction, onEnterAction, onESCAction, onInvalidAction, onScrollAction, onTextChangeAction,
                                 inputLimit, defaultValue, fontFace,
                                 posX, posY,
                                 allowBorder,

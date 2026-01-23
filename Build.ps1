@@ -1,5 +1,5 @@
 #usage -----> powershell -ExecutionPolicy Bypass -Command "& {. .\Build.ps1; Dist -major 1 -minor 0 -patch 0}"
-$msbuild = "C:\Program Files\Microsoft Visual Studio\2022\Community\Msbuild\Current\Bin\MSBuild.exe"
+$msbuild = "c:\Program Files (x86)\Microsoft Visual Studio\18\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
 
 function Add-RMSkinFooter {
     param(
